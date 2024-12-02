@@ -1,0 +1,142 @@
+---
+title: "Project - MPG Data Visualization"
+author: "Panupon Sam"
+date: "2024-05-06"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+
+## Explore data
+
+```{r, message=FALSE, echo=FALSE}
+library(tidyverse)
+library(patchwork)
+
+head(mpg)
+```
+### Relation between Highway MPG and City MPG by Count
+```{r, fig.width=10}
+set.seed(42)
+ggplot(sample_n(mpg,200), aes(hwy, cty)) + 
+  geom_bin2d(bins=20) + 
+  theme_minimal() +
+  labs(
+    title = "Relation between Highway MPG and City MPG by Count",
+    caption = "Data: Mpg from Cars",
+    y = "City miles per gallon",
+    x = "Highway miles per gallon"
+  )
+```
+
+### Relationship between Count of Car and Vehicle Class
+```{r, fig.width=10}
+ggplot(mpg, aes(x = class, fill = class)) +
+  geom_bar() + 
+  theme_minimal() + 
+  scale_fill_brewer(palette = "Set2") +
+  labs(
+    title = "Relationship between Count of Car and Vehicle Class",
+    x = "Vehical Class",
+    y = "Count",
+    caption = "Data: Mpg from Cars"
+  ) 
+
+```
+
+### Count of Cars by Model(Year)
+```{r, fig.width=10}
+car1 <- mpg %>%
+  filter(drv == "f") %>%
+  mutate(model = paste(model,year))
+
+ggplot(car1, aes(model)) +
+  geom_bar() +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90)) +
+  labs(
+    title = "Count of Cars by Model(Year)",
+    x = "Model(Year)",
+    y = "Count",
+    caption = "Data: Mpg from Cars"
+  )
+```
+
+### Relationship between Fuel Type and MPG by City MPG and Highway MPG
+```{r, fig.width=10}
+ggplot(mpg, aes(fl, hwy)) +
+  geom_point() + 
+  theme_minimal() +
+  labs(
+    title = "Relationship between Fuel Type and Highway MPG",
+    x = "Fuel Type",
+    y = "Highway miles/Gallon",
+    caption = "Data: Mpg from Cars"
+  )
+
+ggplot(mpg, aes(fl, cty)) +
+  geom_point() +
+  theme_minimal() +
+  labs(
+    title = "Relationship between Fuel Type and City MPG",
+    x = "Fuel Type",
+    y = "City miles/Gallon",
+    caption = "Data: Mpg from Cars"
+  )
+```
+
+### Relationship between Count of Highway MPG by Trans
+```{r, fig.width=10}
+ggplot(mpg, aes(cty)) +
+  geom_density() +
+  theme_minimal() +
+  facet_wrap(~trans, ncol = 4) +
+  labs(
+    title = "Relationship between Count of Highway MPG by Trans",
+    x = "Highway Miles per Gallon",
+    y = "Density ( Range 0 to 1 )",
+    caption = "Data: Mpg from Cars"
+  )
+```
+
+### Relationship between Vehical Class and MPG by Highway and City MPG
+```{r, fig.width=10}
+ggplot(mpg, aes(class, hwy)) +
+  geom_boxplot(aes(fill = "hwy")) +
+  geom_boxplot(aes(class, cty, fill = "cwy")) +
+  theme_minimal() +
+  labs(
+    title = "Relationship between Vehical Class and MPG by Highway and City MPG",
+    x = "Vehical Class",
+    y = "Miles / Gallon",
+    caption = "Data: Mpg from Cars"
+  )
+```
+
+### Count of Displ 
+```{r, fig.width=10}
+p1 <- ggplot(mpg, aes(displ)) +
+  geom_histogram(bins = 20)
+p2 <- ggplot(mpg, aes(displ)) +
+  geom_density()
+
+(p1 + p2)
+```
+
+### Average City MPG by Car Type
+```{r}
+# relevel คือ มาก -> น้อย
+# geom_col ใช้กับ data ที่ผ่าน agg
+mpg %>%
+  group_by(class) %>%
+  summarise(avg_cty = mean(cty)) %>%
+  ggplot(aes(x=reorder(class, avg_cty), y=avg_cty, label=sprintf("%0.2f", round(avg_cty, digits = 2)))) +
+  geom_col() +
+  labs(title = "Average City MPG by Car Type",
+  y = "Average City MPG",
+  x = "Car Type") +
+  geom_text(size = 3, vjust = 1.5, colour = "white") +
+  theme_minimal()
+```
+
